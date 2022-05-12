@@ -9,11 +9,14 @@ namespace CombinationGenerator.BL.Repositories
 {
     public class CombinationRepository : ICombinationRepository
     {
+        private int N=0;
+        private List<int> _lastValues=null;
+
         public CombinationRepository()
         {
         }
 
-        public async Task<int> GetPossibleCombinationsNumber(int n)
+        public  int GetPossibleCombinationsNumber(int n)
         {
             IEnumerable<int> enumerable = Enumerable.Range(1, n);
             List<int> asList = enumerable.ToList();
@@ -38,12 +41,12 @@ namespace CombinationGenerator.BL.Repositories
         {
             if (length == 1) return list.Select(t => new T[] { t });
 
-            return GetAllPermutations(list, length - 1, pageNumber, pageSize)
+            return  GetAllPermutations(list, length - 1, pageNumber, pageSize)
                 .SelectMany
                 (t => list.Where(o => !t.Contains(o)),
-                    (t1, t2) => t1.Concat(new T[] { t2 })
-                    .OrderBy(t => t)
-                .Skip((pageNumber - 1) * pageSize).Take(pageSize));
+                    (t1, t2) => t1.Concat(new T[] { t2 }));
+
+            //return s.OrderByDescending(t => t);
 
             //return GetAllPermutations(list, length - 1 , pageNumber, pageSize)
             //    .SelectMany
@@ -72,75 +75,78 @@ namespace CombinationGenerator.BL.Repositories
             //pageNumber = pageSize * pageNumber; 
             var ggx = GetAllPermutations(asList, n, pageNumber, pageSize);
             //var x = FunctionalPermutations(asList, n, pageNumber, pageSize);
-            return GetAllPermutations(asList , n, pageNumber, pageSize).ToList();
+            if (pageNumber == 0)
+                pageNumber = 1;
+            //(pageNumber = 0) ? pageNumber = 1 : pageNumber = pageNumber; 
+            return GetAllPermutations(asList, n, pageNumber, pageSize).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
         }
 
 
-        public static bool NextPermutation<T>(T[] elements) where T : IComparable<T>
-        {
-            // More efficient to have a variable instead of accessing a property
-            var count = elements.Length;
+        //public  bool NextPermutation<T>(T[] elements) where T : IComparable<T>
+        //{
+        //    // More efficient to have a variable instead of accessing a property
+        //    var count = elements.Length;
 
-            // Indicates whether this is the last lexicographic permutation
-            var done = true;
+        //    // Indicates whether this is the last lexicographic permutation
+        //    var done = true;
 
-            // Go through the array from last to first
-            for (var i = count - 1; i > 0; i--)
-            {
-                var curr = elements[i];
+        //    // Go through the array from last to first
+        //    for (var i = count - 1; i > 0; i--)
+        //    {
+        //        var curr = elements[i];
 
-                // Check if the current element is less than the one before it
-                if (curr.CompareTo(elements[i - 1]) < 0)
-                {
-                    continue;
-                }
+        //        // Check if the current element is less than the one before it
+        //        if (curr.CompareTo(elements[i - 1]) < 0)
+        //        {
+        //            continue;
+        //        }
 
-                // An element bigger than the one before it has been found,
-                // so this isn't the last lexicographic permutation.
-                done = false;
+        //        // An element bigger than the one before it has been found,
+        //        // so this isn't the last lexicographic permutation.
+        //        done = false;
 
-                // Save the previous (bigger) element in a variable for more efficiency.
-                var prev = elements[i - 1];
+        //        // Save the previous (bigger) element in a variable for more efficiency.
+        //        var prev = elements[i - 1];
 
-                // Have a variable to hold the index of the element to swap
-                // with the previous element (the to-swap element would be
-                // the smallest element that comes after the previous element
-                // and is bigger than the previous element), initializing it
-                // as the current index of the current item (curr).
-                var currIndex = i;
+        //        // Have a variable to hold the index of the element to swap
+        //        // with the previous element (the to-swap element would be
+        //        // the smallest element that comes after the previous element
+        //        // and is bigger than the previous element), initializing it
+        //        // as the current index of the current item (curr).
+        //        var currIndex = i;
 
-                // Go through the array from the element after the current one to last
-                for (var j = i + 1; j < count; j++)
-                {
-                    // Save into variable for more efficiency
-                    var tmp = elements[j];
+        //        // Go through the array from the element after the current one to last
+        //        for (var j = i + 1; j < count; j++)
+        //        {
+        //            // Save into variable for more efficiency
+        //            var tmp = elements[j];
 
-                    // Check if tmp suits the "next swap" conditions:
-                    // Smallest, but bigger than the "prev" element
-                    if (tmp.CompareTo(curr) < 0 && tmp.CompareTo(prev) > 0)
-                    {
-                        curr = tmp;
-                        currIndex = j;
-                    }
-                }
+        //            // Check if tmp suits the "next swap" conditions:
+        //            // Smallest, but bigger than the "prev" element
+        //            if (tmp.CompareTo(curr) < 0 && tmp.CompareTo(prev) > 0)
+        //            {
+        //                curr = tmp;
+        //                currIndex = j;
+        //            }
+        //        }
 
-                // Swap the "prev" with the new "curr" (the swap-with element)
-                elements[currIndex] = prev;
-                elements[i - 1] = curr;
+        //        // Swap the "prev" with the new "curr" (the swap-with element)
+        //        elements[currIndex] = prev;
+        //        elements[i - 1] = curr;
 
-                // Reverse the order of the tail, in order to reset it's lexicographic order
-                for (var j = count - 1; j > i; j--, i++)
-                {
-                    var tmp = elements[j];
-                    elements[j] = elements[i];
-                    elements[i] = tmp;
-                }
-                break;
-            }
+        //        // Reverse the order of the tail, in order to reset it's lexicographic order
+        //        for (var j = count - 1; j > i; j--, i++)
+        //        {
+        //            var tmp = elements[j];
+        //            elements[j] = elements[i];
+        //            elements[i] = tmp;
+        //        }
+        //        break;
+        //    }
 
-            return done;
-        }
-        public static int[] NextPermutation(int[] array)
+        //    return done;
+        //}
+        public  int[] NextPermutation(int[] array)
         {
             // Find non-increasing suffix
             int i = array.Length - 1;
@@ -169,6 +175,9 @@ namespace CombinationGenerator.BL.Repositories
             }
             return array;
         }
+
+
+     
 
     }
 }

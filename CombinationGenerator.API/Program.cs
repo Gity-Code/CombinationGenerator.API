@@ -11,8 +11,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("CorsPolicy", policyBuilder => policyBuilder
             .AllowAnyOrigin()
             .AllowAnyMethod()
-            .AllowAnyHeader());
-
+            .AllowAnyHeader()
+            //.AllowCredentials()
+            );
 
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -21,6 +22,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<ICombinationRepository, CombinationRepository>();
+builder.Services.AddSingleton<ICommonService, CommonService>();
 
 var app = builder.Build();
 

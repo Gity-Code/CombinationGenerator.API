@@ -3,6 +3,7 @@ using CombinationGenerator.BL.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Buffers;
+using System.ComponentModel.DataAnnotations;
 
 namespace CombinationGenerator.API.Controllers
 {
@@ -14,24 +15,27 @@ namespace CombinationGenerator.API.Controllers
         private readonly ICombinationRepository _combinationRepository;
 
         private readonly IHttpContextAccessor _httpContextAccessor;
-        int count; 
-
+       
+        private  readonly ICommonService _commonService;
 
         public CombinationsController(ICombinationRepository combinationRepository,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor, 
+            ICommonService commonService)
         {
             _combinationRepository = combinationRepository;
             _httpContextAccessor = httpContextAccessor;
+            _commonService = commonService;
         }
 
         [HttpGet]
         [Route("start/{n}")]
-        public async Task<IActionResult> GetStart(int n)
+        public  IActionResult GetStart(int n)
         {
             try
             {
-
-                return Ok(await _combinationRepository.GetPossibleCombinationsNumber(n));
+                if(_commonService.GetNumberCombinations() != n)
+                    _commonService.SetNumberCombinations(n);
+                return Ok( _combinationRepository.GetPossibleCombinationsNumber(n));
             }
             catch(Exception ex)
             {
@@ -42,12 +46,13 @@ namespace CombinationGenerator.API.Controllers
         [HttpGet]
         [Route("{n}/{pageNumber}/{pageSize}")]
         public async Task<IActionResult> GetCombination([FromRoute] int n , 
-            [FromRoute] int pageNumber, [FromRoute] int pageSize)
+            [FromRoute][Required] int pageNumber, [FromRoute][Required] int pageSize)
         {
             try
             {
-                //array = new int[n];
-                return Ok(await _combinationRepository.GetCombination(n, pageNumber, pageSize));
+                var combinations = await _combinationRepository.GetCombination(n, pageNumber, pageSize);
+              
+                return Ok(combinations);
             }
             catch (Exception ex)
             {
@@ -55,8 +60,7 @@ namespace CombinationGenerator.API.Controllers
             }
         }
 
-        //private static ArrayPool<byte> _arrayPool = ArrayPool<byte>.Create();
-        private static List<int> array;
+     
 
         [HttpGet]
         [Route("getNext")]
@@ -64,29 +68,16 @@ namespace CombinationGenerator.API.Controllers
         {
             try
             {
-                int n = 3;
-                IEnumerable<int> enumerable = Enumerable.Range(1, n);
-
-                array = new List<int>();
-                //var username = _httpContextAccessor.HttpContext.User.Identity.Name;
-
-                //static int[]
-                //IEnumerable<int> list = Enumerable.Range(1, n);
-                //List<T> asList = list.ToList();
-                //T[] array=new T[]
-                //int[] arr = {1, 2, 3};
-                //List<int> list = new List<int>();
-                //var x = 'c';
-                // first time
-                if (array.Any(x => x.Equals(0)))
+                List<int> array = new List<int>();
+                List<int> prevValues = _commonService.GetLastPermutationValues().ToList();
+                if (prevValues.Count==0)
                 {
-                  
-                   //array = enumerable;
-                    return Ok(enumerable);
+                    int n = _commonService.GetNumberCombinations();
+                    prevValues = Enumerable.Range(1, n).ToList();
                 }
-                //array = CombinationRepository.NextPermutation(array);
-                //HttpContext.Response.RegisterForDispose(_arrayPool);
-                return Ok(array);
+                var result = _combinationRepository.NextPermutation(prevValues.ToArray());
+                _commonService.SetLastPermutationValues(result);
+                return Ok(result);
             }
             catch(Exception ex)
             {

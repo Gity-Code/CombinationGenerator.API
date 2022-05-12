@@ -8,7 +8,11 @@ namespace CombinationGenerator.BL.Interfaces
 {
     public interface ICombinationRepository
     {
-        public  Task<int> GetPossibleCombinationsNumber(int n);
+  
+
+        public int GetPossibleCombinationsNumber(int n);
         Task<dynamic> GetCombination(int n, int pageNumber, int pageSize);
+        int[] NextPermutation(int[] array);
+    
     }
 }
